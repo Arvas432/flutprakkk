@@ -34,6 +34,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  flutter_svg: ^2.0.10+1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -46,7 +47,13 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/
+    - assets/images/flag.png
+    - assets/images/world_map.png
+    - assets/images/show_on_map_ic.png
+    - assets/images/more_data_ic.png
+    - assets/icons/show_on_map_ic.svg
+    - assets/icons/more_data_ic.svg
+    - assets/images/uk_flag.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
