@@ -1,3 +1,4 @@
+import 'package:flutprakkk/searchHistory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -5,7 +6,26 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _selectedIndex = 0;
+  static List<Widget> _widgetOptions = <Widget>[
+    IPInfoLayout(),
+    SearchHistoryWidgetColumn(),
+    SearchHistoryWidget(),
+    SearchHistoryWidgetSeparated()
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -13,7 +33,35 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         body: Container(
           color: const Color(0xFFFAFAFA),
-          child: IPInfoLayout(),
+          child: _widgetOptions.elementAt(_selectedIndex),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Color(0xFFFAFAFA),
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              backgroundColor: Color(0xFFFAFAFA),
+              icon: Icon(Icons.search),
+              label: 'Поиск',
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: Color(0xFFFAFAFA),
+              icon: Icon(Icons.history),
+              label: 'История поиска',
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: Color(0xFFFAFAFA),
+              icon: Icon(Icons.history),
+              label: 'История поиска',
+            ),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.history),
+                label: 'История поиска'),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+          onTap: _onItemTapped,
         ),
       ),
     );
@@ -35,7 +83,7 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
   String _provider = "MGTS";
 
   void _updateCountryInfo() {
-    if(_countryName == 'Russian Federation'){
+    if (_countryName == 'Russian Federation') {
       setState(() {
         _currentFlag = 'assets/images/uk_flag.png';
         _countryName = 'United Kingdom';
@@ -52,7 +100,6 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
         _provider = "MGTS";
       });
     }
-
   }
 
   @override
@@ -176,7 +223,8 @@ class InformationTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(title, style: TextStyle(fontSize: 16)),
-            Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(value,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -189,7 +237,8 @@ class ActionButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
 
-  ActionButton({required this.iconPath, required this.label, required this.onPressed});
+  ActionButton(
+      {required this.iconPath, required this.label, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -207,13 +256,12 @@ class ActionButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(label,
-                style: TextStyle(fontSize: 16, color: Colors.black)),
+            Text(label, style: TextStyle(fontSize: 16, color: Colors.black)),
             SizedBox(width: 24),
             SvgPicture.asset(
               iconPath,
               height: 50,
-              width: 50
+              width: 50,
             )
           ],
         ),
@@ -221,5 +269,3 @@ class ActionButton extends StatelessWidget {
     );
   }
 }
-
-
