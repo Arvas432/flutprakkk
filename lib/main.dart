@@ -1,6 +1,8 @@
 import 'package:flutprakkk/searchHistory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform;
 
 void main() {
   runApp(MyApp());
@@ -26,16 +28,66 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  bool get isDesktop {
+    if (kIsWeb) return true;
+    try {
+      return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    } catch (e) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'IP Finder',
       home: Scaffold(
-        body: Container(
-          color: const Color(0xFFFAFAFA),
-          child: _widgetOptions.elementAt(_selectedIndex),
+        body: Row(
+          children: [
+            if (isDesktop)
+              NavigationRail(
+                backgroundColor: Color(0xFFE6E8EB),
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: (int index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
+                labelType: NavigationRailLabelType.all,
+                destinations: const <NavigationRailDestination>[
+                  NavigationRailDestination(
+                    icon: Icon(Icons.search),
+                    selectedIcon: Icon(Icons.search),
+                    label: Text('Поиск'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.history),
+                    selectedIcon: Icon(Icons.history),
+                    label: Text('История поиска'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.history),
+                    selectedIcon: Icon(Icons.history),
+                    label: Text('История поиска'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.history),
+                    selectedIcon: Icon(Icons.history),
+                    label: Text('История поиска'),
+                  ),
+                ],
+              ),
+            Expanded(
+              child: Container(
+                color: const Color(0xFFFAFAFA),
+                child: _widgetOptions.elementAt(_selectedIndex),
+              ),
+            ),
+          ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: isDesktop
+            ? null
+            : BottomNavigationBar(
           backgroundColor: Color(0xFFFAFAFA),
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
@@ -105,7 +157,7 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -150,7 +202,7 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
                     Spacer(),
                     Center(
                       child: Image.asset(
-                        _currentFlag, // Use current flag asset
+                        _currentFlag,
                         fit: BoxFit.contain,
                         height: 150,
                         width: 225,
@@ -158,7 +210,7 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      _countryName, // Use current country name
+                      _countryName,
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -183,7 +235,7 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
               Expanded(
                 child: ActionButton(
                   iconPath: 'assets/icons/show_on_map_ic.svg',
-                  label: 'Показать на карте',
+                  label: 'Показать\nна карте',
                   onPressed: () {},
                 ),
               ),
@@ -191,7 +243,7 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
               Expanded(
                 child: ActionButton(
                   iconPath: 'assets/icons/more_data_ic.svg',
-                  label: 'Полные данные',
+                  label: 'Полные\nданные',
                   onPressed: _updateCountryInfo,
                 ),
               ),
