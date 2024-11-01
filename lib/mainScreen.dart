@@ -1,8 +1,10 @@
-import 'package:flutprakkk/main.dart';
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
 import 'package:go_router/go_router.dart';
+
+import 'IpFindRepository.dart';
 
 class IPInfoLayout extends StatefulWidget {
   const IPInfoLayout({super.key});
@@ -13,27 +15,39 @@ class IPInfoLayout extends StatefulWidget {
 
 class _IPInfoLayoutState extends State<IPInfoLayout> {
   String _currentFlag = 'assets/images/flag.png';
-  String _countryName = 'Russian Federation';
-  String _cityName = "Moscow";
-  String _ipAddr = "192.168.1.1";
-  String _provider = "MGTS";
+  String _countryName = 'Country';
+  String _cityName = "City";
+  String _ipAddr = "IP Address";
+  String _provider = "ISP";
+  String _latitude = 'Latitude';
+  String _longitude = 'Longitude';
 
-  void _updateCountryInfo() {
-    if (_countryName == 'Russian Federation') {
+  final TextEditingController _ipController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _fetchIpInfo() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final apiKey = '455322ed084f4554b56ceebebcf907ae';
+    final ipAddress = _ipController.text;
+
+    final ipInfo = await fetchIpInfoWithAsyncAwait(ipAddress, apiKey);
+    //final ipInfo = await fetchIpInfoWithFuture(ipAddress, apiKey);
+    print(ipInfo?.countryFlag);
+    if (ipInfo != null) {
       setState(() {
-        _currentFlag = 'assets/images/uk_flag.png';
-        _countryName = 'United Kingdom';
-        _cityName = "London";
-        _ipAddr = "192.168.1.2";
-        _provider = "Vodafone";
+        _currentFlag = ipInfo.countryFlag;
+        _countryName = ipInfo.countryName;
+        _cityName = ipInfo.city;
+        _ipAddr = ipInfo.ip;
+        _provider = ipInfo.isp;
+        _isLoading = false;
       });
     } else {
       setState(() {
-        _currentFlag = 'assets/images/flag.png';
-        _countryName = 'Russian Federation';
-        _cityName = "Moscow";
-        _ipAddr = "192.168.1.1";
-        _provider = "MGTS";
+        _isLoading = false;
       });
     }
   }
@@ -45,26 +59,38 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            padding: EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8.0),
-              color: Color(0xFFE6E8EB),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.search, color: Colors.grey),
-                SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: '192.168.1.1',
-                    ),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                    color: Color(0xFFE6E8EB),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.search, color: Colors.grey),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: _ipController,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Enter IP Address',
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              SizedBox(width: 10),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: _isLoading ? null : _fetchIpInfo,
+              ),
+            ],
           ),
           SizedBox(height: 20),
           Expanded(
@@ -85,11 +111,28 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
                   children: [
                     Spacer(),
                     Center(
-                      child: Image.asset(
+                      child: _isLoading
+                          ? CircularProgressIndicator()
+                          : Image.network(
                         _currentFlag,
                         fit: BoxFit.contain,
                         height: 150,
                         width: 225,
+                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.error, color: Colors.red, size: 150);
+                        },
                       ),
                     ),
                     SizedBox(height: 10),
@@ -107,19 +150,19 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
             ),
           ),
           SizedBox(height: 20),
-          InformationTile(title: 'Страна', value: _countryName),
-          InformationTile(title: 'Город', value: _cityName),
-          InformationTile(title: 'Провайдер', value: _provider),
-          InformationTile(title: 'Подсеть', value: _ipAddr),
-          InformationTile(title: 'Широта', value: '77.245233'),
-          InformationTile(title: 'Долгота', value: '32.234232'),
+          InformationTile(title: 'Country', value: _countryName),
+          InformationTile(title: 'City', value: _cityName),
+          InformationTile(title: 'ISP', value: _provider),
+          InformationTile(title: 'IP Address', value: _ipAddr),
+          InformationTile(title: 'Latitude', value: _latitude),
+          InformationTile(title: 'Longitude', value: _longitude),
           SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: ActionButton(
                   iconPath: 'assets/icons/show_on_map_ic.svg',
-                  label: 'Показать\nна карте',
+                  label: 'Show\non Map',
                   onPressed: () {
                     context.go('/main/mapsHost');
                   },
@@ -129,7 +172,7 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
               Expanded(
                 child: ActionButton(
                   iconPath: 'assets/icons/more_data_ic.svg',
-                  label: 'Полные\nданные',
+                  label: 'More\nInfo',
                   onPressed: () {
                     context.go('/main/additionalInfo');
                   },
