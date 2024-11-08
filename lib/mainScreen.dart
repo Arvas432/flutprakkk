@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +14,7 @@ class IPInfoLayout extends StatefulWidget {
   _IPInfoLayoutState createState() => _IPInfoLayoutState();
 }
 
-class _IPInfoLayoutState extends State<IPInfoLayout> {
+class _IPInfoLayoutState extends State<IPInfoLayout> with AutomaticKeepAliveClientMixin {
   String _currentFlag = 'assets/images/flag.png';
   String _countryName = 'Country';
   String _cityName = "City";
@@ -54,6 +55,8 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 16.0),
       child: Column(
@@ -113,26 +116,21 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
                     Center(
                       child: _isLoading
                           ? CircularProgressIndicator()
-                          : Image.network(
-                        _currentFlag,
+                          : CachedNetworkImage(
+                        imageUrl: _currentFlag,
                         fit: BoxFit.contain,
                         height: 150,
                         width: 225,
-                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          }
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                                  : null,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(Icons.error, color: Colors.red, size: 150);
-                        },
+                        placeholder: (context, url) => Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0x3B9EBF),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Icon(
+                          Icons.error,
+                          color: Colors.red,
+                          size: 150,
+                        ),
                       ),
                     ),
                     SizedBox(height: 10),
@@ -184,6 +182,9 @@ class _IPInfoLayoutState extends State<IPInfoLayout> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class InformationTile extends StatelessWidget {
