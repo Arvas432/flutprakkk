@@ -3,10 +3,8 @@ import 'package:http/http.dart' as http;
 
 import 'dto.dart';
 
-
 Future<IpInfo?> fetchIpInfoWithFuture(String ipAddress, String apiKey) {
   final url = Uri.parse('https://api.ipgeolocation.io/ipgeo?apiKey=$apiKey&ip=$ipAddress');
-
   return http.get(url).then((response) {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

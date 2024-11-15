@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutprakkk/di.dart';
+import 'package:flutprakkk/service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:go_router/go_router.dart';
-
-import 'IpFindRepository.dart';
 
 class IPInfoLayout extends StatefulWidget {
   const IPInfoLayout({super.key});
@@ -30,12 +31,11 @@ class _IPInfoLayoutState extends State<IPInfoLayout> with AutomaticKeepAliveClie
     setState(() {
       _isLoading = true;
     });
-
-    final apiKey = '455322ed084f4554b56ceebebcf907ae';
     final ipAddress = _ipController.text;
-
-    final ipInfo = await fetchIpInfoWithAsyncAwait(ipAddress, apiKey);
-    //final ipInfo = await fetchIpInfoWithFuture(ipAddress, apiKey);
+    GetIt.I.isRegistered<IpFindService>();
+    var service = GetIt.instance<IpFindService>();
+   // var service = IpFindServiceProvider.of(context)?.ipFindService;
+    final ipInfo = await service?.fetchIpInfoWithAsyncAwait(ipAddress);
     print(ipInfo?.countryFlag);
     if (ipInfo != null) {
       setState(() {

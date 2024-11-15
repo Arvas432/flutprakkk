@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 class IpInfo {
   final String ip;
   final String hostname;
@@ -61,4 +63,8 @@ class IpInfo {
       currentTime: json['time_zone']?['current_time'] ?? 'N/A',
     );
   }
+
 }
+
+
+
