@@ -8,184 +8,146 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:go_router/go_router.dart';
 
-class IPInfoLayout extends StatefulWidget {
-  const IPInfoLayout({super.key});
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-  @override
-  _IPInfoLayoutState createState() => _IPInfoLayoutState();
-}
+import 'ip_bloc.dart';
 
-class _IPInfoLayoutState extends State<IPInfoLayout> with AutomaticKeepAliveClientMixin {
-  String _currentFlag = 'assets/images/flag.png';
-  String _countryName = 'Country';
-  String _cityName = "City";
-  String _ipAddr = "IP Address";
-  String _provider = "ISP";
-  String _latitude = 'Latitude';
-  String _longitude = 'Longitude';
-
-  final TextEditingController _ipController = TextEditingController();
-  bool _isLoading = false;
-
-  Future<void> _fetchIpInfo() async {
-    setState(() {
-      _isLoading = true;
-    });
-    final ipAddress = _ipController.text;
-    GetIt.I.isRegistered<IpFindService>();
-    var service = GetIt.instance<IpFindService>();
-   // var service = IpFindServiceProvider.of(context)?.ipFindService;
-    final ipInfo = await service?.fetchIpInfoWithAsyncAwait(ipAddress);
-    print(ipInfo?.countryFlag);
-    if (ipInfo != null) {
-      setState(() {
-        _currentFlag = ipInfo.countryFlag;
-        _countryName = ipInfo.countryName;
-        _cityName = ipInfo.city;
-        _ipAddr = ipInfo.ip;
-        _provider = ipInfo.isp;
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
+class IPInfoLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    final TextEditingController _ipController = TextEditingController();
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                    color: Color(0xFFE6E8EB),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search, color: Colors.grey),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: _ipController,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Enter IP Address',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(width: 10),
-              IconButton(
-                icon: Icon(Icons.search, color: Colors.blue),
-                onPressed: _isLoading ? null : _fetchIpInfo,
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          Expanded(
-            child: Stack(
+    return BlocProvider(
+      create: (_) => IpInfoBloc(),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
               children: [
-                // Background image
-                Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.3,
-                    child: Image.asset(
-                      'assets/images/world_map.png',
-                      fit: BoxFit.cover,
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      color: Color(0xFFE6E8EB),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search, color: Colors.grey),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: _ipController,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Enter IP Address',
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Spacer(),
-                    Center(
-                      child: _isLoading
-                          ? CircularProgressIndicator()
-                          : CachedNetworkImage(
-                        imageUrl: _currentFlag,
-                        fit: BoxFit.contain,
-                        height: 150,
-                        width: 225,
-                        placeholder: (context, url) => Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0x3B9EBF),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Icon(
-                          Icons.error,
-                          color: Colors.red,
-                          size: 150,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      _countryName,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Spacer(),
-                  ],
+                SizedBox(width: 10),
+                BlocBuilder<IpInfoBloc, IpInfoState>(
+                  builder: (context, state) {
+                    return IconButton(
+                      icon: Icon(Icons.search, color: Colors.blue),
+                      onPressed: () {
+                        final ip = _ipController.text.trim();
+                        if (ip.isNotEmpty) {
+                          context.read<IpInfoBloc>().add(FetchIpInfoEvent(ip));
+                        }
+                      },
+                    );
+                  },
                 ),
               ],
             ),
-          ),
-          SizedBox(height: 20),
-          InformationTile(title: 'Country', value: _countryName),
-          InformationTile(title: 'City', value: _cityName),
-          InformationTile(title: 'ISP', value: _provider),
-          InformationTile(title: 'IP Address', value: _ipAddr),
-          InformationTile(title: 'Latitude', value: _latitude),
-          InformationTile(title: 'Longitude', value: _longitude),
-          SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ActionButton(
-                  iconPath: 'assets/icons/show_on_map_ic.svg',
-                  label: 'Show\non Map',
-                  onPressed: () {
-                    context.go('/main/mapsHost');
-                  },
-                ),
+            SizedBox(height: 20),
+            Expanded(
+              child: BlocBuilder<IpInfoBloc, IpInfoState>(
+                builder: (context, state) {
+                  if (state is IpInfoLoading) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (state is IpInfoLoaded) {
+                    final ipInfo = state.ipInfo;
+                    return Column(
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl: ipInfo.countryFlag,
+                          fit: BoxFit.contain,
+                          height: 150,
+                          width: 225,
+                          placeholder: (context, url) =>
+                              CircularProgressIndicator(),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error, size: 150, color: Colors.red),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          ipInfo.countryName,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        InformationTile(title: 'Country', value: ipInfo.countryName),
+                        InformationTile(title: 'City', value: ipInfo.city),
+                        InformationTile(title: 'ISP', value: ipInfo.isp),
+                        InformationTile(title: 'IP Address', value: ipInfo.ip),
+                        InformationTile(title: 'Latitude', value: ipInfo.latitude.toString()),
+                        InformationTile(title: 'Longitude', value: ipInfo.longitude.toString()),
+                        SizedBox(height: 20),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ActionButton(
+                                iconPath: 'assets/icons/show_on_map_ic.svg',
+                                label: 'Show\non Map',
+                                onPressed: () {
+                                  context.go('/main/mapsHost');
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 10), // Space between buttons
+                            Expanded(
+                              child: ActionButton(
+                                iconPath: 'assets/icons/more_data_ic.svg',
+                                label: 'More\nInfo',
+                                onPressed: () {
+                                  context.go('/main/additionalInfo');
+                                },
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    );
+                  } else if (state is IpInfoError) {
+                    return Center(
+                      child: Text(
+                        'Error fetching IP info.',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    );
+                  }
+                  return Center(
+                    child: Text('Enter an IP address to fetch information.'),
+                  );
+                },
               ),
-              SizedBox(width: 10), // Space between buttons
-              Expanded(
-                child: ActionButton(
-                  iconPath: 'assets/icons/more_data_ic.svg',
-                  label: 'More\nInfo',
-                  onPressed: () {
-                    context.go('/main/additionalInfo');
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
+
 
 class InformationTile extends StatelessWidget {
   final String title;
