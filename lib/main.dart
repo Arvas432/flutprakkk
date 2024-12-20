@@ -2,12 +2,13 @@ import 'package:flutprakkk/di.dart';
 import 'package:flutprakkk/searchHistory.dart';
 import 'package:flutprakkk/service.dart';
 import 'package:flutter/material.dart';
-
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get_it/get_it.dart';
 import 'dart:io' show Platform;
 
 import 'package:go_router/go_router.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'mainScreen.dart';
 
@@ -17,6 +18,8 @@ void main() {
     baseUrl: 'https://api.ipgeolocation.io/ipgeo',
     apiKey: '455322ed084f4554b56ceebebcf907ae',
   );
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
   GetIt.I.isRegistered<IpFindService>(instanceName: 'bebus');
   runApp(IpFindServiceProvider(ipFindService: ipFindService, child: MyApp()));
 }
