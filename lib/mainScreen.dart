@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'ip_bloc.dart';
+import 'main.dart';
 
 class IPInfoLayout extends StatelessWidget {
   @override
@@ -109,17 +110,32 @@ class IPInfoLayout extends StatelessWidget {
                                 iconPath: 'assets/icons/show_on_map_ic.svg',
                                 label: 'Show\non Map',
                                 onPressed: () {
-                                  context.go('/main/mapsHost');
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MapsScreen(
+                                        latitude: state.ipInfo.latitude, // Замените на ваше значение latitude
+                                        longitude: state.ipInfo.longitude, // Замените на ваше значение longitude
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
+
                             SizedBox(width: 10), // Space between buttons
                             Expanded(
                               child: ActionButton(
                                 iconPath: 'assets/icons/more_data_ic.svg',
                                 label: 'More\nInfo',
                                 onPressed: () {
-                                  context.go('/main/additionalInfo');
+                                  final ipInfo = state.ipInfo;
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AdditionalInfoScreen(ipInfo: ipInfo),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
