@@ -18,8 +18,6 @@ void main() {
     baseUrl: 'https://api.ipgeolocation.io/ipgeo',
     apiKey: '455322ed084f4554b56ceebebcf907ae',
   );
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
   GetIt.I.isRegistered<IpFindService>(instanceName: 'bebus');
   runApp(IpFindServiceProvider(ipFindService: ipFindService, child: MyApp()));
 }

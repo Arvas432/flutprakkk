@@ -1,9 +1,10 @@
+import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutprakkk/service.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'db.dart';
 import 'dto.dart';
 
 abstract class IpInfoEvent extends Equatable {
@@ -41,6 +42,8 @@ class IpInfoLoaded extends IpInfoState {
 class IpInfoError extends IpInfoState {}
 
 class IpInfoBloc extends Bloc<IpInfoEvent, IpInfoState> {
+  static const String _historyKey = 'search_history';
+
   IpInfoBloc() : super(IpInfoInitial()) {
     on<FetchIpInfoEvent>(_onFetchIpInfo);
   }
@@ -50,10 +53,9 @@ class IpInfoBloc extends Bloc<IpInfoEvent, IpInfoState> {
     emit(IpInfoLoading());
     try {
       final service = GetIt.I<IpFindService>();
-      final ipInfo = await service.fetchIpInfoWithAsyncAwait(event.ipAddress);
+      final ipInfo = await service.fetchIpInfoWithAsyncAwait("1.1.1.1");
       if (ipInfo != null) {
-        await DatabaseHelper.instance.insertIpInfo(ipInfo);
-
+        await _saveToHistory(ipInfo);
         emit(IpInfoLoaded(ipInfo));
       } else {
         emit(IpInfoError());
@@ -63,4 +65,13 @@ class IpInfoBloc extends Bloc<IpInfoEvent, IpInfoState> {
     }
   }
 
+  Future<void> _saveToHistory(IpInfo ipInfo) async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getStringList(_historyKey) ?? [];
+    final newEntry = jsonEncode(ipInfo.toJson());
+    if (!historyJson.contains(newEntry)) {
+      historyJson.insert(0, newEntry);
+      await prefs.setStringList(_historyKey, historyJson);
+    }
+  }
 }

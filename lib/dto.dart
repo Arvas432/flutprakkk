@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
+import 'dart:convert';
+
 class IpInfo {
   final String ip;
   final String hostname;
@@ -41,29 +43,47 @@ class IpInfo {
     required this.countryFlag,
   });
 
-  factory IpInfo.fromJson(Map<String, dynamic> json) {
-    return IpInfo(
-      ip: json['ip'] ?? 'Unknown IP',
-      hostname: json['hostname'] ?? 'Unknown Hostname',
-      continentCode: json['continent_code'] ?? 'N/A',
-      continentName: json['continent_name'] ?? 'Unknown Continent',
-      countryCode2: json['country_code2'] ?? 'N/A',
-      countryName: json['country_name'] ?? 'Unknown Country',
-      countryFlag: json['country_flag'] ?? 'assets/images/default_flag.png',
-      stateProv: json['state_prov'] ?? 'Unknown State',
-      city: json['city'] ?? 'Unknown City',
-      zipcode: json['zipcode'] ?? 'N/A',
-      latitude: double.tryParse(json['latitude']?.toString() ?? '') ?? 0.0,
-      longitude: double.tryParse(json['longitude']?.toString() ?? '') ?? 0.0,
-      isp: json['isp'] ?? 'Unknown ISP',
-      organization: json['organization'] ?? 'Unknown Organization',
-      currencyCode: json['currency']?['code'] ?? 'N/A',
-      currencyName: json['currency']?['name'] ?? 'Unknown Currency',
-      timeZoneName: json['time_zone']?['name'] ?? 'Unknown Time Zone',
-      currentTime: json['time_zone']?['current_time'] ?? 'N/A',
-    );
-  }
+  Map<String, dynamic> toJson() => {
+    'ip': ip,
+    'hostname': hostname,
+    'continentCode': continentCode,
+    'continentName': continentName,
+    'countryCode2': countryCode2,
+    'countryName': countryName,
+    'stateProv': stateProv,
+    'city': city,
+    'zipcode': zipcode,
+    'latitude': latitude,
+    'longitude': longitude,
+    'isp': isp,
+    'organization': organization,
+    'currencyCode': currencyCode,
+    'currencyName': currencyName,
+    'timeZoneName': timeZoneName,
+    'currentTime': currentTime,
+    'countryFlag': countryFlag,
+  };
 
+  factory IpInfo.fromJson(Map<String, dynamic> json) => IpInfo(
+    ip: json['ip'],
+    hostname: json['hostname'],
+    continentCode: json['continentCode'],
+    continentName: json['continentName'],
+    countryCode2: json['countryCode2'],
+    countryName: json['countryName'],
+    stateProv: json['stateProv'],
+    city: json['city'],
+    zipcode: json['zipcode'],
+    latitude: json['latitude'],
+    longitude: json['longitude'],
+    isp: json['isp'],
+    organization: json['organization'],
+    currencyCode: json['currencyCode'],
+    currencyName: json['currencyName'],
+    timeZoneName: json['timeZoneName'],
+    currentTime: json['currentTime'],
+    countryFlag: json['countryFlag'],
+  );
 }
 
 
