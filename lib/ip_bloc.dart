@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutprakkk/service.dart';
 import 'package:get_it/get_it.dart';
 
+import 'db.dart';
 import 'dto.dart';
 
 abstract class IpInfoEvent extends Equatable {
@@ -51,6 +52,8 @@ class IpInfoBloc extends Bloc<IpInfoEvent, IpInfoState> {
       final service = GetIt.I<IpFindService>();
       final ipInfo = await service.fetchIpInfoWithAsyncAwait(event.ipAddress);
       if (ipInfo != null) {
+        await DatabaseHelper.instance.insertIpInfo(ipInfo);
+
         emit(IpInfoLoaded(ipInfo));
       } else {
         emit(IpInfoError());
@@ -59,4 +62,5 @@ class IpInfoBloc extends Bloc<IpInfoEvent, IpInfoState> {
       emit(IpInfoError());
     }
   }
+
 }
